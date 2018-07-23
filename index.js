@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const R = require('ramda');
 const utils = require('req-res-utils');
+const movieHelper = require('./src/movie');
 
 const port = process.env.PORT || 3030;
 const serviceName = process.env.SERVICE_NAME || 'movie-info';
@@ -10,31 +10,6 @@ const maxAllowed = process.env.MAX_ALLOWED || 10;
 
 // Load sample data
 const movies = require('./data/indexed_movies.json');
-
-// Response resolvers
-const createMovieInfo = (movies, movieId) => {
-  const resolvePosterPath = movie => `https://image.tmdb.org/t/p/w342${movie.posterPath}`;
-  const resolveCast = movie => movie.cast.map(artist => artist.id);
-  const resolveGenres = movie => movie.genres.map(genre => genre.id);
-
-  const movie = movies[movieId];
-  
-  return {
-    "id": movie.id,
-    "title": movie.title,
-    "tagline": movie.tagline,
-    "overview": movie.overview,
-    "popularity": movie.popularity,
-    "runtime": movie.runtime,
-    "releaseDate": movie.releaseDate,
-    "revenue": movie.revenue,
-    "budget": movie.budget,
-    "posterPath": resolvePosterPath(movie),
-    "originalLanguage": movie.originalLanguage,
-    "genres": resolveGenres(movie),
-    "cast": resolveCast(movie)
-  }  
-};
 
 // Initialize the app
 const app = express();
@@ -67,7 +42,7 @@ app.get('/movies', (req, res) => {
       req.query,
       maxAllowed,
       movies,
-      createMovieInfo
+      movieHelper.createMovieInfo
     );
     res.send(moviesResponse);
   } catch (error) {
